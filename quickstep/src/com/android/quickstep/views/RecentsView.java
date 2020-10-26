@@ -132,6 +132,7 @@ import android.view.ViewTreeObserver.OnScrollChangedListener;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Interpolator;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.OverScroller;
 import android.widget.Toast;
@@ -571,6 +572,7 @@ public abstract class RecentsView<
     private final RecentsModel mModel;
     private final int mSplitPlaceholderSize;
     private final int mSplitPlaceholderInset;
+    private Button mActionClearAllButton;
     private final ClearAllButton mClearAllButton;
     @Nullable
     private AddDesktopButton mAddDesktopButton = null;
@@ -1244,6 +1246,8 @@ public abstract class RecentsView<
         mActionsView.updateFor3pLauncher(mIs3PLauncher);
         mSplitSelectStateController = splitController;
         mDesktopRecentsTransitionController = desktopRecentsTransitionController;
+        mActionClearAllButton = (Button) mActionsView.findViewById(R.id.action_clear_all);
+        mActionClearAllButton.setOnClickListener(this::dismissAllTasks);
     }
 
     public SplitSelectStateController getSplitSelectController() {
@@ -1719,7 +1723,7 @@ public abstract class RecentsView<
      * button fully visible, center page is Clear All button.
      */
     public boolean isClearAllHidden() {
-        return mClearAllButton.getAlpha() != 1f;
+        return true;
     }
 
     @Override
