@@ -306,7 +306,11 @@ public class FallbackRecentsView<CONTAINER_TYPE extends Context & RecentsViewCon
         super.setOverviewStateEnabled(enabled);
         if (enabled) {
             RecentsState state = mContainer.getStateManager().getState();
-            setDisallowScrollToClearAll(!state.hasClearAllButton());
+            if (mContainer.getDeviceProfile().getDeviceProperties().isTablet()) {
+                setDisallowScrollToClearAll(!state.hasClearAllButton());
+            } else {
+                setDisallowScrollToClearAll(true);
+            }
         }
     }
 

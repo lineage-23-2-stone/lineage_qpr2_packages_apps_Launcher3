@@ -1247,7 +1247,11 @@ public abstract class RecentsView<
         mSplitSelectStateController = splitController;
         mDesktopRecentsTransitionController = desktopRecentsTransitionController;
         mActionClearAllButton = (Button) mActionsView.findViewById(R.id.action_clear_all);
-        mActionClearAllButton.setOnClickListener(this::dismissAllTasks);
+        if (mContainer.getDeviceProfile().getDeviceProperties().isTablet()) {
+            mActionClearAllButton.setVisibility(GONE);
+        } else {
+            mActionClearAllButton.setOnClickListener(this::dismissAllTasks);
+        }
     }
 
     public SplitSelectStateController getSplitSelectController() {
@@ -1723,6 +1727,9 @@ public abstract class RecentsView<
      * button fully visible, center page is Clear All button.
      */
     public boolean isClearAllHidden() {
+        if (mContainer.getDeviceProfile().getDeviceProperties().isTablet()) {
+            return mClearAllButton.getAlpha() != 1f;
+        }
         return true;
     }
 
