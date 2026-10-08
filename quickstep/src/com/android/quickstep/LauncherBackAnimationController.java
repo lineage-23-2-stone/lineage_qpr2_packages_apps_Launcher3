@@ -38,6 +38,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Choreographer;
 import android.view.IRemoteAnimationFinishedCallback;
@@ -454,7 +455,13 @@ public class LauncherBackAnimationController {
     }
 
     private void setBlur(int blurRadius) {
-        mTransaction.setBackgroundBlurRadius(mScrimLayer, blurRadius);
+        if (!mLauncher.getResources().getBoolean(R.bool.config_enableLauncherBlur)
+                || Settings.Global.getInt(mLauncher.getContentResolver(),
+                Settings.Global.DISABLE_WINDOW_BLURS, 0) == 1) {
+            mTransaction.setBackgroundBlurRadius(mScrimLayer, 0);
+        } else {
+            mTransaction.setBackgroundBlurRadius(mScrimLayer, blurRadius);
+        }
     }
 
     /** Transform the target window to match the target rect. */

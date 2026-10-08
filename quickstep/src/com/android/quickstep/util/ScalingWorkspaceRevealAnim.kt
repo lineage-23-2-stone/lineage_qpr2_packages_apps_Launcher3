@@ -110,7 +110,9 @@ class ScalingWorkspaceRevealAnim(
             LauncherState.BACKGROUND_APP,
             setupConfig,
         )
-        if (playBlur) {
+        val isBlurEnabled =
+            playBlur && launcher.resources.getBoolean(R.bool.config_enableLauncherBlur)
+        if (isBlurEnabled) {
             addBlurLayer()
         }
 
@@ -172,7 +174,7 @@ class ScalingWorkspaceRevealAnim(
         transitionConfig.duration = SCALE_DURATION_MS
 
         var depthController: DepthController? = null
-        if (playBlur) {
+        if (isBlurEnabled) {
             // Match the Wallpaper depth to the rest of the content.
             depthController = (launcher as? QuickstepLauncher)?.depthController
             transitionConfig.setInterpolator(StateAnimationConfig.ANIM_DEPTH, SCALE_INTERPOLATOR)

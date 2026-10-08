@@ -129,12 +129,14 @@ public class BaseDepthController {
 
     public BaseDepthController(QuickstepLauncher activity) {
         mLauncher = activity;
-        if (Flags.allAppsBlur() || enableOverviewBackgroundWallpaperBlur()) {
+        boolean blurEnabled = activity.getResources().getBoolean(R.bool.config_enableLauncherBlur);
+        if (blurEnabled && (Flags.allAppsBlur() || enableOverviewBackgroundWallpaperBlur())) {
             mCrossWindowBlursEnabled =
                     CrossWindowBlurListeners.getInstance().isCrossWindowBlurEnabled();
             mMaxBlurRadius = activity.getResources().getDimensionPixelSize(
                     R.dimen.max_depth_blur_radius_enhanced);
         } else {
+            mCrossWindowBlursEnabled = false;
             mMaxBlurRadius = activity.getResources().getInteger(R.integer.max_depth_blur_radius);
         }
         mWallpaperManager = activity.getSystemService(WallpaperManager.class);
@@ -164,7 +166,15 @@ public class BaseDepthController {
         return mCrossWindowBlursEnabled;
     }
 
+    protected boolean shouldBlur() {
+        return mCrossWindowBlursEnabled && !mLauncher.getScrimView().isFullyOpaque()
+                && !mPauseBlurs;
+    }
+
     protected void setCrossWindowBlursEnabled(boolean isEnabled) {
+        if (!mLauncher.getResources().getBoolean(R.bool.config_enableLauncherBlur)) {
+            isEnabled = false;
+        }
         if (mCrossWindowBlursEnabled == isEnabled) {
             return;
         }
@@ -229,8 +239,7 @@ public class BaseDepthController {
                         : mBaseSurface;
 
         int previousBlur = mCurrentBlur;
-        int newBlur = mCrossWindowBlursEnabled && !hasOpaqueBg && !mPauseBlurs ? (int) (blurAmount
-                * mMaxBlurRadius) : 0;
+        int newBlur = shouldBlur() ? (int) (blurAmount * mMaxBlurRadius) : 0;
         int delta = Math.abs(newBlur - previousBlur);
         if (skipSimilarBlur && delta < Utilities.dpToPx(1) && newBlur != 0 && previousBlur != 0
                 && blurAmount != 1f) {
@@ -251,7 +260,7 @@ public class BaseDepthController {
                 .setOpaque(isSurfaceOpaque);
         // Set early wake-up flags when we know we're executing an expensive operation, this way
         // SurfaceFlinger will adjust its internal offsets to avoid jank.
-        boolean wantsEarlyWakeUp = blurAmount > 0 && blurAmount < 1;
+        boolean wantsEarlyWakeUp = shouldBlur() && blurAmount > 0 && blurAmount < 1;
         if (wantsEarlyWakeUp && !mInEarlyWakeUp) {
             setEarlyWakeup(surfaceTransaction.getTransaction(), true);
         } else if (!wantsEarlyWakeUp && mInEarlyWakeUp) {
@@ -308,7 +317,8 @@ public class BaseDepthController {
     /** @return {@code true} if the workspace should be blurred. */
     @VisibleForTesting
     public boolean blurWorkspaceDepthTargets() {
-        if (!Flags.allAppsBlur()) {
+        if (!Flags.allAppsBlur()
+                || !mLauncher.getResources().getBoolean(R.bool.config_enableLauncherBlur)) {
             return false;
         }
         StateManager<LauncherState, Launcher> stateManager = mLauncher.getStateManager();
